@@ -22,14 +22,20 @@ $errores = [];
 // ejecuta el codigo despues de que el usuario envía el formulario
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Procesar el formulario
-    $titulo = $_POST['titulo'];
-    $precio = $_POST['precio'];
-    $descripcion = $_POST['descripcion'];
-    $habitaciones = $_POST['habitaciones'];
-    $wc = $_POST['wc'];
-    $estacionamiento = $_POST['estacionamiento'];
-    $id_vendedores= $_POST['vendedor'];
+    $titulo = mysqli_real_escape_string($db,$_POST['titulo']);
+    $precio = mysqli_real_escape_string($db, $_POST['precio']);
+    $descripcion = mysqli_real_escape_string($db, $_POST['descripcion']);
+    $habitaciones = mysqli_real_escape_string($db, $_POST['habitaciones']);
+    $wc = mysqli_real_escape_string($db, $_POST['wc']);
+    $estacionamiento = mysqli_real_escape_string($db, $_POST['estacionamiento']);
+    $id_vendedores = mysqli_real_escape_string($db, $_POST['vendedor']);
     $creado = date('Y/m/d');
+
+    // Asignar files a una variable
+    $imagen = $_FILES['imagen'];
+
+
+    // Validar que no haya campos vacíos
     if(!$titulo) {
         $errores[] = "Debes añadir un título";
     }
@@ -51,17 +57,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if(!$id_vendedores) {
         $errores[] = "Elige un vendedor";
     }
+    //validacion para imagen
+    if(!$imagen['name'] || $imagen['error']) {
+        $errores[] = "La imagen es obligatoria";
+    }
+    //validar el tamaño de la imagen
+    $medida = 40 * 1000 * 1000; // 40mb
+    if($imagen['size']> $medida) {
+        $errores[] = "La imagen es muy pesada";
+    }
+
     // revisar que el array de errores esté vacío
     if(empty($errores)) {
+        //subir la imagen
+        // Crear una carpeta para subir las imagenes
+        $carpetaImagenes = '../../imagenes/';
+        if(!is_dir($carpetaImagenes)) {
+            mkdir($carpetaImagenes);
+        }
+        // Crear un nombre único para la imagen
+        $nombreImagen = md5(uniqid(rand(), true)). ".jpg";
+        //la imagen en memoria se mueve a la carpeta de imagenes
+        move_uploaded_file($imagen['tmp_name'], $carpetaImagenes . $nombreImagen);
+
         // Insertar en la base de datos
-        $query = "INSERT INTO propiedades (titulo, precio, descripcion, habitaciones, wc, estacionamiento, creado ,id_vendedores) 
-        VALUES ('$titulo', '$precio', '$descripcion', '$habitaciones', '$wc', '$estacionamiento','$creado', '$id_vendedores')";
+        $query = "INSERT INTO propiedades (titulo, precio, imagen,descripcion, habitaciones, wc, estacionamiento, creado ,id_vendedores) 
+        VALUES ('$titulo', '$precio','$nombreImagen','$descripcion', '$habitaciones', '$wc', '$estacionamiento','$creado', '$id_vendedores')";
         // Ejecutar la query
         $resultado = mysqli_query($db, $query);
 
         if ($resultado) {
             // Redireccionar al usuario
-            header('Location: /admin');
+            header('Location: /admin?resultado=1');
         } 
      }
 }
@@ -79,7 +106,8 @@ incluirTemplate('header');
         </div>
         <?php endforeach;?> 
         <a href="/admin" class="boton boton-verde">Volver</a>
-        <form class="formulario" method="POST" action="/admin/propiedades/crear.php">
+        <!-- enctype es para subida de archivos en un formulariio -->
+        <form class="formulario" method="POST" action="/admin/propiedades/crear.php" enctype="multipart/form-data">
         <fieldset>
             <legend>Información General</legend>
             <label for="titulo">Título</label>
@@ -87,7 +115,7 @@ incluirTemplate('header');
             <label for="precio">Precio</label>
             <input type="number" id="precio" name="precio" placeholder="Precio Propiedad" value="<?php echo $precio; ?>">
             <label for="imagen">Imagen:</label>
-            <input type="file" id="imagen" accept="image/jpeg, image/png, image/jpg">
+            <input type="file" id="imagen" accept="image/jpeg, image/png" name="imagen">
             <label for="descripcion">Descripción</label>
             <textarea id="descripcion" name="descripcion" placeholder="Descripción Propiedad"><?php echo $descripcion; ?></textarea>
         </fieldset>
