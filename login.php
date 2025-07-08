@@ -1,50 +1,66 @@
 <?php
-    // Conectar a la base de datos
     require 'includes/config/database.php';
     $db = conectarDB();
 
-    //Autenticar el usuario
     $errores = [];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validar el email y password
-    $email = mysqli_real_escape_string($db,  filter_var( $_POST['email'], FILTER_VALIDATE_EMAIL) );
+    $email = mysqli_real_escape_string($db, filter_var($_POST['email'], FILTER_VALIDATE_EMAIL));
     $password = mysqli_real_escape_string($db, $_POST['password']);
 
-    // Consultar si el usuario existe
-    $query = "SELECT * FROM usuarios WHERE email = '${email}'";
-    $resultado = mysqli_query($db, $query);
-    if (!$email){
-        $errores[] = "El email es obligatorio o no es valido";
+    if (!$email) {
+        $errores[] = "El email es obligatorio o no es válido";
     }
-    if (!$password){
+    if (!$password) {
         $errores[] = "El password es obligatorio";
     }
+
     if (empty($errores)) {
-        // Verificar si el usuario existe
-        $query = "SELECT * FROM usuarios WHERE email = '${email}'";
+        $query = "SELECT u.*, r.name AS role_name 
+                  FROM users AS u 
+                  JOIN roles AS r ON u.role_id = r.id 
+                  WHERE u.email = '${email}'";
+        
         $resultado = mysqli_query($db, $query);
-        if($resultado->num_rows) {
+
+        if ($resultado->num_rows) {
             $usuario = mysqli_fetch_assoc($resultado);
-            // Verificar si el password es correcto
+
             $auth = password_verify($password, $usuario['password']);
+
             if ($auth) {
-                // Iniciar la sesión
                 session_start();
+                
                 $_SESSION['usuario'] = $usuario['email'];
                 $_SESSION['login'] = true;
-                header('Location:/admin');
+                $_SESSION['role_name'] = $usuario['role_name']; 
+
+                switch ($_SESSION['role_name']) {
+                    case 'administrador':
+                        header('Location: /admin/dashboard'); 
+                        break;
+                    case 'empleado':
+                        header('Location: /empleado/dashboard'); 
+                        break;
+                    case 'usuario':
+                        header('Location: /usuario/perfil'); 
+                        break;
+                    default:
+                        header('Location: /'); 
+                        break;
+                }
+                exit; 
+
             } else {
                 $errores[] = "El password es incorrecto";
             }
         } else {
             $errores[] = "El usuario no existe";
-
         }
-    
     }
+}
 
-
- }
 // Header
 require 'includes/funciones.php';
 incluirTemplate('header');
@@ -70,5 +86,4 @@ incluirTemplate('header');
     </main>
     <?php 
     incluirTemplate('footer');
-    // Footerss
     ?>
