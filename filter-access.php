@@ -19,6 +19,6 @@ if (!isset($_SESSION['role_name']) || $_SESSION['role_name'] !== 'administrador'
     exit(); 
 }
 
-// Si llega hasta acá, significa que está todo liso. Te doy un ejemplo de aplicacion en el archivo gestionar_usuarios.php
+// Si llega hasta acá, significa que está todo liso.
 
 ?>
