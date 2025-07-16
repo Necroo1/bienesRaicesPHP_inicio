@@ -21,7 +21,7 @@
         <div class="contenedor contenido-header">
             <div class="barra">
                 <a href="/">
-                    <img src="/build/img/logo.svg" alt="Logotipo de Bienes Raices">
+                    <img src="/build/img/Logo-Brasco-07.png" alt="Logotipo de Bienes Raices">
                 </a>
 
                 <div class="mobile-menu">
@@ -35,17 +35,12 @@
                         <a href="anuncios.php">Anuncios</a>
                         <a href="blog.php">Blog</a>
                         <a href="contacto.php">Contacto</a>
-                        <?php if($auth): ?>
+                        <?php if(!$auth): ?>
+                            <a href="login.php">Iniciar Sesión</a>
+                        <?php else: ?>
                             <a href="cerrar-sesion.php">Cerrar Sesión</a>
                         <?php endif; ?>
                     </nav>
                 </div>
-            </div> <!--.barra-->
-            <?php 
-            if($inicio) {
-                echo "<h1>Venta de Casas y Departamentos Exclusivos de Lujo</h1>";
-            }
-            ?>
-        </div>
     </header>
   
