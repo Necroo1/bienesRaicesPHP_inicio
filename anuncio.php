@@ -26,7 +26,7 @@ incluirTemplate('header');
 
 
         <div class="resumen-propiedad">
-            <p class="precio"><?php  echo $propiedad ['precio']; ?>/p>
+            <p class="precio"><?php  echo $propiedad ['precio']; ?></p>
             <ul class="iconos-caracteristicas">
                 <li>
                     <img class="icono" loading="lazy" src="build/img/icono_wc.svg" alt="icono wc">

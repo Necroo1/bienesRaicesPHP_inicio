@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . '/../includes/funciones.php';
+require __DIR__ . '/../../includes/funciones.php';
 $auth = estaAutenticado();
 if (!$auth) {
     header('Location: /');
